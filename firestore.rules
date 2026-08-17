@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    match /users/{userId} {
+      function isAdmin() {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      }
+      allow read: if isSignedIn();
+
+      // Role at signup must always be 'passenger' -- no self-assigning driver/admin.
+      allow create: if isSignedIn() && request.auth.uid == userId
+        && request.resource.data.role == 'passenger';
+
+      // Owner can update their own doc, but role must stay unchanged.
+      // Only an existing admin can change someone's role.
+      allow update: if isSignedIn() && (
+        (request.auth.uid == userId && request.resource.data.role == resource.data.role) ||
+        isAdmin()
+      );
+
+      allow delete: if false;
+      match /withdrawals/{withdrawalId} {
+        allow read: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId;
+        allow update, delete: if false;
+      }
+    }
+    match /rides/{rideId} {
+      allow create: if isSignedIn() && request.resource.data.riderId == request.auth.uid;
+      allow read: if isSignedIn() && (
+        resource.data.riderId == request.auth.uid ||
+        resource.data.driverId == request.auth.uid ||
+        resource.data.status == 'requested'
+      );
+      allow update: if isSignedIn() && (
+        resource.data.riderId == request.auth.uid ||
+        resource.data.driverId == request.auth.uid ||
+        (resource.data.status == 'requested' && request.resource.data.driverId == request.auth.uid)
+      );
+      allow delete: if false;
+    }
+    match /notifications/{notificationId} {
+      allow create: if isSignedIn();
+      allow read, update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+    match /topups/{topupId} {
+      function isAdmin() {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      }
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+  }
+}

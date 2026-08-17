@@ -1,0 +1,27 @@
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+const MapComponent = (props: any) => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>
+        Maps are not available on the web version.
+      </Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  text: {
+    fontSize: 16,
+    color: '#888',
+  },
+});
+
+export default MapComponent;

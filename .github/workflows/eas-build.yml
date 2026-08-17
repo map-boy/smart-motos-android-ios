@@ -1,0 +1,54 @@
+name: EAS Build and Release
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform to build"
+        required: true
+        default: "all"
+        type: choice
+        options: [all, android, ios]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 -d > google-services.json
+      - run: echo "${{ secrets.GOOGLE_SERVICE_INFO_PLIST_B64 }}" | base64 -d > GoogleService-Info.plist
+      - run: echo "${{ secrets.ENV_FILE_B64 }}" | base64 -d > .env
+      - name: Build Android
+        if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all' || github.event_name == 'push' }}
+        run: eas build --platform android --profile apk --non-interactive --no-wait --json > android-build.json
+      - name: Build iOS
+        if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all' || github.event_name == 'push' }}
+        run: eas build --platform ios --profile production --non-interactive --no-wait --json > ios-build.json
+      - name: Wait for builds and download artifacts
+        run: |
+          for f in android-build.json ios-build.json; do
+            if [ -f "$f" ]; then
+              BUILD_ID=$(jq -r '.[0].id' "$f")
+              eas build:wait --id "$BUILD_ID"
+              URL=$(eas build:view "$BUILD_ID" --json | jq -r '.artifacts.buildUrl')
+              EXT=$(echo "$URL" | grep -q '.ipa' && echo "ipa" || echo "apk")
+              curl -L "$URL" -o "smartmotos-$BUILD_ID.$EXT"
+            fi
+          done
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: smartmotos-*.*
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
