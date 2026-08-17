@@ -1,0 +1,69 @@
+# dependencies
+node_modules/
+
+# expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macos
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+.env
+
+# typescript
+*.tsbuildinfo
+
+.google-services.json
+.app.json
+
+# System and IDE files
+AppData/
+Local/
+Temp/
+*.log
+*.tmp
+*.ldb
+
+# Node modules
+node_modules/
+
+# Android/iOS build folders
+android/
+ios/
+serviceAccountKey.json
+*.jks
+*.keystore
+serviceAccountKey.json
+credentials.json
+credentials/
+google-services.json
+GoogleService-Info.plist
+.env
+.env.*
+!.env.example
+firestore-debug.log
+audit_report.txt
+hardcoded_mock_scan.txt
+project_digest.txt
+firebase_migration_context.txt
