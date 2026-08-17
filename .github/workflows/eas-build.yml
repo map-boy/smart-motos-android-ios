@@ -39,7 +39,18 @@ jobs:
           for f in android-build.json ios-build.json; do
             if [ -f "$f" ]; then
               BUILD_ID=$(jq -r '.[0].id' "$f")
-              eas build:wait --id "$BUILD_ID"
+              echo "Waiting for build $BUILD_ID..."
+              while true; do
+                STATUS=$(eas build:view "$BUILD_ID" --json | jq -r '.status')
+                echo "Status: $STATUS"
+                if [ "$STATUS" = "finished" ]; then
+                  break
+                elif [ "$STATUS" = "errored" ] || [ "$STATUS" = "canceled" ]; then
+                  echo "Build $BUILD_ID ended with status: $STATUS"
+                  exit 1
+                fi
+                sleep 30
+              done
               URL=$(eas build:view "$BUILD_ID" --json | jq -r '.artifacts.buildUrl')
               EXT=$(echo "$URL" | grep -q '.ipa' && echo "ipa" || echo "apk")
               curl -L "$URL" -o "smartmotos-$BUILD_ID.$EXT"
