@@ -67,3 +67,5 @@ audit_report.txt
 hardcoded_mock_scan.txt
 project_digest.txt
 firebase_migration_context.txt
+
+GoogleService-Info.plist
