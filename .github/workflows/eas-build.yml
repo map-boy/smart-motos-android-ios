@@ -33,7 +33,7 @@ jobs:
         run: eas build --platform android --profile apk --non-interactive --no-wait --json > android-build.json
       - name: Build iOS
         if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all' || github.event_name == 'push' }}
-        run: eas build --platform ios --profile production --non-interactive --no-wait --json > ios-build.json
+        run: eas build --platform ios --profile simulator --non-interactive --no-wait --json > ios-build.json
       - name: Wait for builds and download artifacts
         run: |
           for f in android-build.json ios-build.json; do
