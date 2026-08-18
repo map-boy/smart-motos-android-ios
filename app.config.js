@@ -12,7 +12,8 @@ export default {
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.nihonor.smartmotosapp"
+      bundleIdentifier: "com.nihonor.smartmotosapp",
+      googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? "./GoogleService-Info.plist"
     },
     web: {
       bundler: "metro",
