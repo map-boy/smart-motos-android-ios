@@ -35,6 +35,7 @@ jobs:
         if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all' || github.event_name == 'push' }}
         run: eas build --platform ios --profile simulator --non-interactive --no-wait --json > ios-build.json
       - name: Wait for builds and download artifacts
+        timeout-minutes: 30
         run: |
           for f in android-build.json ios-build.json; do
             if [ -f "$f" ]; then
